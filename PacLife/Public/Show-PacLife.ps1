@@ -75,7 +75,10 @@
                 $rows.Add((& $pad 'URL' $context.EnvironmentUrl))
             }
             if ($context.Solution) {
-                $rows.Add((& $pad 'Solution' "$($context.Solution.Name)  ($($context.Solution.Kind))"))
+                $solutionLine = $context.Solution.Name
+                if ($context.Solution.Version) { $solutionLine += "  v$($context.Solution.Version)" }
+                $solutionLine += "  ($($context.Solution.Kind))"
+                $rows.Add((& $pad 'Solution' $solutionLine))
             }
             if ($context.ProfileCount -gt 0) {
                 $profileLine = "$($context.ProfileCount)"

@@ -97,7 +97,15 @@ function Format-PacLifeSegments {
                     default     { & $add $envName 'EnvUnknown' 100 }
                 }
 
-                if ($Context.Solution) { & $add "sln $($Context.Solution.Name)" 'Solution' 70 }
+                if ($Context.Solution) {
+                    $slnText = "sln $($Context.Solution.Name)"
+                    if ($Context.Solution.Version) {
+                        # version drops first on narrow terminals (AltText)
+                        & $add "$slnText $($Context.Solution.Version)" 'Solution' 70 $slnText
+                    } else {
+                        & $add $slnText 'Solution' 70
+                    }
+                }
 
                 if ($Context.CloudName -and $Context.CloudName -ne 'Public') {
                     & $add $Context.CloudName 'Sovereign' 95

@@ -136,28 +136,35 @@ Describe 'Get-PacContext' {
 
 Describe 'Get-PacSolutionContext' {
 
-    It 'finds a cdsproj by searching upward from a subdirectory' {
+    It 'finds a cdsproj by searching upward and reads the version from its manifest' {
         $root = Join-Path $TestDrive "sln-$([guid]::NewGuid().ToString('N'))"
         $child = Join-Path $root 'src/components'
         New-Item -ItemType Directory -Path $child -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Other') -Force | Out-Null
         Set-Content (Join-Path $root 'ContosoCore.cdsproj') '<Project />'
+        Set-Content (Join-Path $root 'src/Other/Solution.xml') @'
+<ImportExportXml><SolutionManifest><UniqueName>ContosoCore</UniqueName><Version>1.2.0.3</Version></SolutionManifest></ImportExportXml>
+'@
 
         InModuleScope PacLife -Parameters @{ Path = $child } {
             $result = Get-PacSolutionContext -Path $Path
             $result.Name | Should -Be 'ContosoCore'
+            $result.Version | Should -Be '1.2.0.3'
             $result.Kind | Should -Be 'Solution'
         }
     }
 
-    It 'reads the UniqueName from src/Other/Solution.xml' {
+    It 'reads the UniqueName and Version from src/Other/Solution.xml' {
         $root = Join-Path $TestDrive "xml-$([guid]::NewGuid().ToString('N'))"
         New-Item -ItemType Directory -Path (Join-Path $root 'src/Other') -Force | Out-Null
         Set-Content (Join-Path $root 'src/Other/Solution.xml') @'
-<ImportExportXml><SolutionManifest><UniqueName>FancySolution</UniqueName></SolutionManifest></ImportExportXml>
+<ImportExportXml><SolutionManifest><UniqueName>FancySolution</UniqueName><Version>2.0.0.1</Version></SolutionManifest></ImportExportXml>
 '@
 
         InModuleScope PacLife -Parameters @{ Path = $root } {
-            (Get-PacSolutionContext -Path $Path).Name | Should -Be 'FancySolution'
+            $result = Get-PacSolutionContext -Path $Path
+            $result.Name | Should -Be 'FancySolution'
+            $result.Version | Should -Be '2.0.0.1'
         }
     }
 
@@ -197,6 +204,20 @@ Describe 'Format-PacLifeSegments' {
             $line = Format-PacLifeSegments -Context $Ctx -Width 200
             $line | Should -Not -Match 'Public'
             $line | Should -Match 'EMEA'
+        }
+    }
+
+    It 'renders the solution segment with its version' {
+        $root = Join-Path $TestDrive "fmt-sln-$([guid]::NewGuid().ToString('N'))"
+        New-Item -ItemType Directory -Path (Join-Path $root 'src/Other') -Force | Out-Null
+        Set-Content (Join-Path $root 'src/Other/Solution.xml') @'
+<ImportExportXml><SolutionManifest><UniqueName>ContosoCore</UniqueName><Version>1.2.0.3</Version></SolutionManifest></ImportExportXml>
+'@
+        InModuleScope PacLife -Parameters @{ Root = $root } {
+            $ctx = Get-PacContext
+            $ctx.Solution = Get-PacSolutionContext -Path $Root
+            $line = Format-PacLifeSegments -Context $ctx -Width 200
+            $line | Should -Match 'sln ContosoCore 1\.2\.0\.3'
         }
     }
 

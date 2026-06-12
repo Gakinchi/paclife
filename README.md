@@ -63,7 +63,7 @@ In a legacy console without VT support, PacLife simply stays quiet.
 | Environment | friendly name, colored **red** (Production/Default/protected), **green** (Sandbox/Developer/Trial), **yellow** (unknown or *no environment selected*) |
 | Auth kind | only shown for legacy `DATAVERSE`/`ADMIN` profiles (explains why some pac commands fail despite being "logged in") — the modern `UNIVERSAL` default is hidden |
 | Geo / cloud | the environment's region (`EMEA`, dim); the cloud appears only when sovereign (`GCC High`, magenta) — the default `Public` cloud is hidden |
-| Solution | detected from your working directory (`.cdsproj`, `src/Other/Solution.xml`, `.pcfproj` — searched upward, like git finds `.git`) |
+| Solution | detected from your working directory (`.cdsproj`, `src/Other/Solution.xml`, `.pcfproj` — searched upward, like git finds `.git`), with its version: `sln ContosoCore 1.2.0.3` |
 | Profiles | `4 profiles` — shown when you have more than one to switch between (`pac auth list`; details in `alleyez`) |
 | pac version | the locally installed CLI version |
 
