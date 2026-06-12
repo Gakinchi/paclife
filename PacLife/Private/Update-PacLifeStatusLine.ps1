@@ -42,7 +42,10 @@
     # After Clear-Host the cursor sits on row 1 — nudge it below the statusline
     # so the prompt doesn't render on top of it.
     if ($cursorTop -le 0) { $out += "${esc}[2;1H" }
-    [Console]::Write($out)
+    # $Host.UI.Write goes through WriteConsoleW (full Unicode). [Console]::Write
+    # would re-encode via the console codepage and turn ⚡/⚠/powerline glyphs
+    # into '?' on Windows PowerShell 5.1.
+    try { $Host.UI.Write($out) } catch { [Console]::Write($out) }
 
     if ($context.Config.windowTitle) {
         try {

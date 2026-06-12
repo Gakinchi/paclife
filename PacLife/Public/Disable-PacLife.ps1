@@ -25,7 +25,7 @@
 
         # Reset the scroll region and wipe the pinned row
         $esc = [char]27
-        try { [Console]::Write("${esc}7${esc}[r${esc}[1;1H${esc}[0m${esc}[K${esc}8") } catch { Write-Verbose "PacLife: terminal reset failed: $_" }
+        try { $Host.UI.Write("${esc}7${esc}[r${esc}[1;1H${esc}[0m${esc}[K${esc}8") } catch { Write-Verbose "PacLife: terminal reset failed: $_" }
 
         if ($null -ne $script:OriginalTitle) {
             try { $Host.UI.RawUI.WindowTitle = $script:OriginalTitle } catch { Write-Verbose "PacLife: title restore failed: $_" }
