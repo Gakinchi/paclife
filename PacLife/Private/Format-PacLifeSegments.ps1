@@ -111,9 +111,10 @@ function Format-PacLifeSegments {
                 if ($Context.EnvironmentGeo) { & $add $Context.EnvironmentGeo 'Dim2' 40 }
             }
 
+            # plain words, and only when there is actually something to switch to;
+            # the active index lives in the full banner (alleyez)
             if ($Context.ProfileCount -gt 1) {
-                $idx = if ($Context.ActiveProfileIndex) { "#$($Context.ActiveProfileIndex)/" } else { '' }
-                & $add "$idx$($Context.ProfileCount)" 'Dim2' 35
+                & $add "$($Context.ProfileCount) profiles" 'Dim2' 35
             }
             if ($Context.PacVersion) { & $add "pac $($Context.PacVersion)" 'Dim3' 20 }
         }

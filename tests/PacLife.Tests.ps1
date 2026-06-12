@@ -200,6 +200,15 @@ Describe 'Format-PacLifeSegments' {
         }
     }
 
+    It 'states the profile count in plain words, without the cryptic index' {
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            $line = Format-PacLifeSegments -Context $Ctx -Width 200
+            $line | Should -Match '2 profiles'
+            $line | Should -Not -Match '#\d'
+        }
+    }
+
     It 'shows the auth kind segment for legacy non-UNIVERSAL profiles' {
         $env:PACLIFE_STORE = New-StoreDir -Fixture 'spn-gcchigh.json'
         $ctx = Get-PacContext

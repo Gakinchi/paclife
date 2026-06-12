@@ -7,7 +7,7 @@ Always know **who** you're logged in as, **which tenant**, **which environment**
 you're working on — before you run that `pac solution import` against the wrong org.
 
 ```
- ⚡ PacLife  dennis@contoso.com  Contoso Prod ⚠ Production  EMEA  #4/4  pac 2.7.4
+ ⚡ PacLife  dennis@contoso.com  Contoso Prod ⚠ Production  EMEA  4 profiles  pac 2.7.4
 ┌──────────────────────────────────────────────────────────────────────┐
 │  ↑ pinned to row 1 — your commands and output scroll freely below    │
 │                                                                      │
@@ -64,7 +64,7 @@ In a legacy console without VT support, PacLife simply stays quiet.
 | Auth kind | only shown for legacy `DATAVERSE`/`ADMIN` profiles (explains why some pac commands fail despite being "logged in") — the modern `UNIVERSAL` default is hidden |
 | Geo / cloud | the environment's region (`EMEA`, dim); the cloud appears only when sovereign (`GCC High`, magenta) — the default `Public` cloud is hidden |
 | Solution | detected from your working directory (`.cdsproj`, `src/Other/Solution.xml`, `.pcfproj` — searched upward, like git finds `.git`) |
-| Profiles | `#4/4` — active profile / total (`pac auth list`) |
+| Profiles | `4 profiles` — shown when you have more than one to switch between (`pac auth list`; details in `alleyez`) |
 | pac version | the locally installed CLI version |
 
 The terminal **tab title** is set to the environment name too, so you can tell your tabs apart.
