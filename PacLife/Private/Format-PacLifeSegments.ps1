@@ -102,7 +102,9 @@ function Format-PacLifeSegments {
                 if ($Context.CloudName -and $Context.CloudName -ne 'Public') {
                     & $add $Context.CloudName 'Sovereign' 95
                 }
-                if ($Context.AuthKind) { & $add $Context.AuthKind 'Dim1' 30 }
+                # exception-based: UNIVERSAL is the modern default and carries no
+                # information — only legacy DATAVERSE/ADMIN profiles are worth a segment
+                if ($Context.AuthKind -and $Context.AuthKind -ne 'UNIVERSAL') { & $add $Context.AuthKind 'Dim1' 30 }
 
                 $trail = @()
                 if ($Context.EnvironmentGeo) { $trail += $Context.EnvironmentGeo }

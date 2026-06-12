@@ -184,6 +184,21 @@ Describe 'Format-PacLifeSegments' {
         }
     }
 
+    It 'hides the auth kind segment for modern UNIVERSAL profiles' {
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Not -Match 'UNIVERSAL'
+        }
+    }
+
+    It 'shows the auth kind segment for legacy non-UNIVERSAL profiles' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'spn-gcchigh.json'
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Match 'ADMIN'
+        }
+    }
+
     It 'says Default Environment for a protected default-type environment' {
         $env:PACLIFE_STORE = New-StoreDir -Fixture 'default-env.json'
         $ctx = Get-PacContext

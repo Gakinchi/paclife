@@ -26,7 +26,10 @@ PacLife is a persistent Power Platform CLI statusline for the terminal, named af
   (AppId, client secret/cert auth). Service principals are visually unmistakable
   in the statusline so no one mistakes a CI/consultant identity for themselves.
 - **Auth kind** — the profile's `Kind` (UNIVERSAL / DATAVERSE / ADMIN). Explains why
-  some pac commands fail despite being "logged in". Shown as a small segment.
+  some pac commands fail despite being "logged in". Shown in the statusline only when
+  it is *not* UNIVERSAL (exception-based display: the modern default carries no
+  information — same principle as Public cloud being dim while sovereign clouds are
+  highlighted). Always visible in the full banner.
 - **Theme matching** — PacLife may adopt the shades and segment shapes of the user's
   oh-my-posh theme so the statusline looks native next to their prompt. The semantic
   colors are inviolable: theme matching changes *nuances* (the theme's own red/green/
