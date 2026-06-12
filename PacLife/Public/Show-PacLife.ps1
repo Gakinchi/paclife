@@ -25,11 +25,13 @@
     $esc = [char]27
     $reset = "$esc[0m"
     $dim = "$esc[38;5;245m"
-    $accent = switch ($context.EnvironmentState) {
-        'Protected' { "$esc[38;5;160m" }
-        'Safe'      { "$esc[38;5;40m" }
-        default     { "$esc[38;5;178m" }
+    $theme = Get-PacLifeTheme
+    $accentHex = switch ($context.EnvironmentState) {
+        'Protected' { $theme.Roles.EnvProtected.Bg }
+        'Safe'      { $theme.Roles.EnvSafe.Bg }
+        default     { $theme.Roles.EnvUnknown.Bg }
     }
+    $accent = "$esc[$(ConvertTo-PacLifeSgr $accentHex)m"
     if ($env:NO_COLOR) { $reset = ''; $dim = ''; $accent = '' }
 
     $rows = [System.Collections.Generic.List[string]]::new()

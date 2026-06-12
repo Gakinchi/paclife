@@ -1,0 +1,16 @@
+﻿{
+  "palette": {
+    "blue": "#1e3a8a",
+    "green": "#15803d"
+  },
+  "blocks": [
+    {
+      "type": "prompt",
+      "segments": [
+        { "type": "session", "style": "powerline", "powerline_symbol": "", "foreground": "#ffffff", "background": "p:blue" },
+        { "type": "path", "style": "powerline", "powerline_symbol": "", "foreground": "#ffffff", "background": "p:green" },
+        { "type": "git", "style": "powerline", "powerline_symbol": "", "foreground": "#1a1a1a", "background": "#d4a017" }
+      ]
+    }
+  ]
+}

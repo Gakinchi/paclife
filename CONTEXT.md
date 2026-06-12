@@ -1,4 +1,4 @@
-# PacLife — domain glossary
+﻿# PacLife — domain glossary
 
 PacLife is a persistent Power Platform CLI statusline for the terminal, named after 2Pac's *Pac's Life*.
 
@@ -24,3 +24,7 @@ PacLife is a persistent Power Platform CLI statusline for the terminal, named af
   in the statusline so no one mistakes a CI/consultant identity for themselves.
 - **Auth kind** — the profile's `Kind` (UNIVERSAL / DATAVERSE / ADMIN). Explains why
   some pac commands fail despite being "logged in". Shown as a small segment.
+- **Theme matching** — PacLife may adopt the shades and segment shapes of the user's
+  oh-my-posh theme so the statusline looks native next to their prompt. The semantic
+  colors are inviolable: theme matching changes *nuances* (the theme's own red/green/
+  yellow), never *meaning* (red = protected, green = safe, yellow = unknown/missing).

@@ -1,4 +1,4 @@
-# ⚡ PacLife
+﻿# ⚡ PacLife
 
 > **All Eyez on your environment.**
 
@@ -68,6 +68,21 @@ In a legacy console without VT support, PacLife simply stays quiet.
 
 The terminal **tab title** is set to the environment name too, so you can tell your tabs apart.
 
+## Matches your oh-my-posh theme
+
+If you use [oh-my-posh](https://ohmyposh.dev), PacLife reads your active theme
+(via `POSH_THEME`, offline — it never runs `oh-my-posh.exe`) and restyles itself to match:
+
+- **Colors**: segments adopt your theme's palette, rendered in exact 24-bit truecolor.
+- **Shape**: diamond-style themes (like *atomic*) get diamond-capped segments;
+  powerline themes get their own separator glyph.
+- **Semantics stay sacred**: the environment segment keeps its red/green/yellow meaning,
+  but uses *your theme's own* red/green/yellow shades (with built-in fallback when the
+  theme has no matching hue). Theme matching changes nuances, never meaning.
+
+JSON themes only — YAML/TOML themes silently fall back to the built-in palette.
+Set `"theme": "builtin"` to opt out.
+
 ## Configuration (`~/.paclife.json`, optional)
 
 ```json
@@ -75,13 +90,15 @@ The terminal **tab title** is set to the environment name too, so you can tell y
   "protectedUrls": ["*contoso-prod*", "*.crm4.dynamics.com/"],
   "safeUrls": ["*playground*"],
   "windowTitle": true,
-  "icons": "powerline"
+  "theme": "auto",
+  "style": "auto"
 }
 ```
 
 - `protectedUrls` — wildcard patterns that force the red treatment regardless of environment type
   (for that production org someone created as a *Sandbox*...). `safeUrls` mutes it.
-- `icons: "ascii"` — drop the powerline separator glyph if your font lacks it.
+- `theme` — `"auto"` (match oh-my-posh when present), `"builtin"`, or a path to an `.omp.json` file.
+- `style` — `"auto"` (follow the theme), `"powerline"`, `"diamond"`, or `"plain"`.
 - `NO_COLOR` environment variable is honored.
 
 ## Honesty notes (by design)

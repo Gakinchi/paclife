@@ -1,0 +1,14 @@
+﻿{
+  "blocks": [
+    {
+      "type": "prompt",
+      "segments": [
+        { "type": "shell", "style": "diamond", "leading_diamond": "", "trailing_diamond": "", "foreground": "#ffffff", "background": "#0077c2" },
+        { "type": "root", "style": "diamond", "leading_diamond": "", "trailing_diamond": "", "foreground": "#FFFB38", "background": "#ef5350" },
+        { "type": "path", "style": "powerline", "powerline_symbol": "", "foreground": "#2d3436", "background": "#FF9248" },
+        { "type": "git", "style": "diamond", "leading_diamond": "", "trailing_diamond": "", "foreground": "#011627", "background": "#FFFB38" },
+        { "type": "node", "style": "diamond", "leading_diamond": "", "trailing_diamond": "", "foreground": "#3C873A", "background": "#303030" }
+      ]
+    }
+  ]
+}

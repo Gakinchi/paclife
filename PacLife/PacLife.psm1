@@ -7,6 +7,8 @@ $script:OriginalTitle = $null
 $script:AuthStoreCache = $null
 $script:ConfigCache = $null
 $script:CliVersionCache = $null
+$script:ThemeCache = $null
+$script:SgrCache = @{}
 $script:SolutionCache = @{}
 $script:RepoSlug = 'Gakinchi/power-platform-cli-environment-banner'
 
@@ -23,7 +25,8 @@ Set-Alias -Name keepyaheadup -Value Enable-PacLife     # "Keep Ya Head Up"
 Set-Alias -Name lifegoeson   -Value Disable-PacLife    # "Life Goes On"
 Set-Alias -Name changes      -Value Update-PacLife     # "Changes"
 
-Export-ModuleMember -Function Show-PacLife, Get-PacContext, Enable-PacLife, Disable-PacLife, Update-PacLife `
+# Show-PacLifeFull must be exported for the 'alleyez' alias to resolve from the caller's scope
+Export-ModuleMember -Function Show-PacLife, Show-PacLifeFull, Get-PacContext, Enable-PacLife, Disable-PacLife, Update-PacLife `
     -Alias paclife, alleyez, keepyaheadup, lifegoeson, changes
 
 # Restore the terminal if the module is removed while the statusline is active

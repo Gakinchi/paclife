@@ -5,10 +5,19 @@ BeforeAll {
     $script:FixtureDir = Join-Path $PSScriptRoot 'fixtures'
     Import-Module $script:ModulePath -Force
 
-    # Keep the developer's real store/config out of the tests
+    # Keep the developer's real store/config/oh-my-posh theme out of the tests
     $script:SavedStore = $env:PACLIFE_STORE
     $script:SavedConfig = $env:PACLIFE_CONFIG
+    $script:SavedPoshTheme = $env:POSH_THEME
     $env:PACLIFE_CONFIG = Join-Path ([IO.Path]::GetTempPath()) 'paclife-test-config-does-not-exist.json'
+    $env:POSH_THEME = $null
+
+    function New-ThemeConfig {
+        param([string]$ThemePath, [string]$Name = [guid]::NewGuid().ToString('N'))
+        $path = Join-Path $TestDrive "config-$Name.json"
+        @{ theme = $ThemePath } | ConvertTo-Json | Set-Content $path
+        return $path
+    }
 
     function New-StoreDir {
         param([string]$Fixture, [string]$Name = [guid]::NewGuid().ToString('N'))
@@ -24,6 +33,7 @@ BeforeAll {
 AfterAll {
     $env:PACLIFE_STORE = $script:SavedStore
     $env:PACLIFE_CONFIG = $script:SavedConfig
+    $env:POSH_THEME = $script:SavedPoshTheme
     Remove-Module PacLife -Force -ErrorAction SilentlyContinue
 }
 
@@ -203,6 +213,78 @@ Describe 'Format-PacLifeSegments' {
             $line = Format-PacLifeSegments -Context $Ctx -Width 200
             $line | Should -Match 'SPN'
             $line | Should -Match 'GCC HIGH'
+        }
+    }
+}
+
+Describe 'Theme matching (oh-my-posh)' {
+
+    BeforeEach {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
+    }
+
+    AfterEach {
+        $env:PACLIFE_CONFIG = Join-Path ([IO.Path]::GetTempPath()) 'paclife-test-config-does-not-exist.json'
+        $env:POSH_THEME = $null
+    }
+
+    It 'adopts colors, diamond shape and hue-harvested semantics from a diamond theme' {
+        $env:PACLIFE_CONFIG = New-ThemeConfig -ThemePath (Join-Path $script:FixtureDir 'atomic-like.omp.json')
+        InModuleScope PacLife {
+            $theme = Get-PacLifeTheme
+            $theme.JoinStyle | Should -Be 'diamond'
+            $theme.Roles.EnvProtected.Bg | Should -Be '#ef5350'   # the theme's own red
+            $theme.Roles.EnvUnknown.Bg | Should -Be '#fffb38'     # the theme's own yellow
+            $theme.Roles.EnvSafe.Bg | Should -Be '#008700'        # no green in theme → builtin fallback
+            $theme.Roles.Brand.Bg | Should -Be '#0077c2'          # first saturated pair
+        }
+    }
+
+    It 'renders truecolor SGR with the theme red on a protected environment' {
+        $env:PACLIFE_CONFIG = New-ThemeConfig -ThemePath (Join-Path $script:FixtureDir 'atomic-like.omp.json')
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            $line = Format-PacLifeSegments -Context $Ctx -Width 200
+            $line | Should -Match '48;2;239;83;80'   # #ef5350 as 24-bit background
+        }
+    }
+
+    It 'adopts the powerline symbol and resolves p: palette references' {
+        $env:PACLIFE_CONFIG = New-ThemeConfig -ThemePath (Join-Path $script:FixtureDir 'powerline-like.omp.json')
+        InModuleScope PacLife {
+            $theme = Get-PacLifeTheme
+            $theme.JoinStyle | Should -Be 'powerline'
+            $theme.Separator | Should -Be ([string][char]0xE0B4)
+            $theme.Roles.EnvSafe.Bg | Should -Be '#15803d'        # p:green resolved + hue-harvested
+            $theme.Roles.Brand.Bg | Should -Be '#1e3a8a'          # p:blue resolved
+        }
+    }
+
+    It 'ignores POSH_THEME when theme is builtin' {
+        $env:POSH_THEME = Join-Path $script:FixtureDir 'atomic-like.omp.json'
+        $config = Join-Path $TestDrive 'builtin-config.json'
+        '{ "theme": "builtin" }' | Set-Content $config
+        $env:PACLIFE_CONFIG = $config
+        InModuleScope PacLife {
+            (Get-PacLifeTheme).Source | Should -Be 'builtin'
+        }
+    }
+
+    It 'falls back to builtin for a broken or non-JSON theme file' {
+        $broken = Join-Path $TestDrive 'broken.omp.json'
+        'this is not json {{{' | Set-Content $broken
+        $env:PACLIFE_CONFIG = New-ThemeConfig -ThemePath $broken
+        InModuleScope PacLife {
+            (Get-PacLifeTheme).Source | Should -Be 'builtin'
+        }
+    }
+
+    It 'honors the legacy icons=ascii setting as plain style' {
+        $config = Join-Path $TestDrive 'legacy-config.json'
+        '{ "theme": "builtin", "icons": "ascii" }' | Set-Content $config
+        $env:PACLIFE_CONFIG = $config
+        InModuleScope PacLife {
+            (Get-PacLifeTheme).JoinStyle | Should -Be 'plain'
         }
     }
 }

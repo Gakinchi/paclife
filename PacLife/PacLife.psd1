@@ -8,6 +8,7 @@
     PowerShellVersion = '5.1'
     FunctionsToExport = @(
         'Show-PacLife'
+        'Show-PacLifeFull'
         'Get-PacContext'
         'Enable-PacLife'
         'Disable-PacLife'
