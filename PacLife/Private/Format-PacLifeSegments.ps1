@@ -106,10 +106,9 @@ function Format-PacLifeSegments {
                 # information — only legacy DATAVERSE/ADMIN profiles are worth a segment
                 if ($Context.AuthKind -and $Context.AuthKind -ne 'UNIVERSAL') { & $add $Context.AuthKind 'Dim1' 30 }
 
-                $trail = @()
-                if ($Context.EnvironmentGeo) { $trail += $Context.EnvironmentGeo }
-                if ($Context.CloudName -eq 'Public') { $trail += 'Public' }
-                if ($trail) { & $add ($trail -join ' · ') 'Dim2' 40 }
+                # 'Public' cloud is the constant default — exception-based display:
+                # only the sovereign segment above ever mentions the cloud
+                if ($Context.EnvironmentGeo) { & $add $Context.EnvironmentGeo 'Dim2' 40 }
             }
 
             if ($Context.ProfileCount -gt 1) {

@@ -191,6 +191,15 @@ Describe 'Format-PacLifeSegments' {
         }
     }
 
+    It 'hides the constant Public cloud but keeps the geo' {
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            $line = Format-PacLifeSegments -Context $Ctx -Width 200
+            $line | Should -Not -Match 'Public'
+            $line | Should -Match 'EMEA'
+        }
+    }
+
     It 'shows the auth kind segment for legacy non-UNIVERSAL profiles' {
         $env:PACLIFE_STORE = New-StoreDir -Fixture 'spn-gcchigh.json'
         $ctx = Get-PacContext
