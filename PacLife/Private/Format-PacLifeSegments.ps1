@@ -64,7 +64,8 @@ function Format-PacLifeSegments {
         $segments.Add([pscustomobject]@{ Text = $text; AltText = $altText; Role = $role; Priority = $priority })
     }
 
-    & $add '⚡ PacLife' 'Brand' 50
+    # visual anchor only — the name lives in alleyez/README, not in prime screen estate
+    & $add '⚡' 'Brand' 50
 
     switch ($Context.State) {
         'NotInstalled' { & $add 'pac CLI not found' 'Dim1' 100 }

@@ -7,7 +7,7 @@ Always know **who** you're logged in as, **which tenant**, **which environment**
 you're working on — before you run that `pac solution import` against the wrong org.
 
 ```
- ⚡ PacLife  dennis@contoso.com  Contoso Prod ⚠ Production  EMEA  4 profiles  pac 2.7.4
+ ⚡  dennis@contoso.com  Contoso Prod ⚠ Production  EMEA  4 profiles  pac 2.7.4
 ┌──────────────────────────────────────────────────────────────────────┐
 │  ↑ pinned to row 1 — your commands and output scroll freely below    │
 │                                                                      │
