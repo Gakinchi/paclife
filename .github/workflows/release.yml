@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stamp module version from tag
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $manifest = Get-Content PacLife/PacLife.psd1 -Raw
+          $manifest = $manifest -replace "ModuleVersion\s*=\s*'[^']+'", "ModuleVersion     = '$version'"
+          [IO.File]::WriteAllText("$PWD/PacLife/PacLife.psd1", $manifest, [Text.UTF8Encoding]::new($true))
+          Test-ModuleManifest PacLife/PacLife.psd1 | Select-Object Name, Version
+
+      - name: Package PacLife.zip
+        shell: pwsh
+        run: Compress-Archive -Path PacLife -DestinationPath PacLife.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: PacLife.zip
+          generate_release_notes: true

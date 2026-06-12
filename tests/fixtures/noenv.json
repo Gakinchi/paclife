@@ -1,0 +1,35 @@
+{
+  "Current": {
+    "UNIVERSAL": {
+      "Kind": "UNIVERSAL",
+      "User": "maker@contoso.com",
+      "ExpiresOn": "2026-06-10T12:00:00+00:00",
+      "Name": "",
+      "ProfileType": 4,
+      "CloudInstance": 0,
+      "TenantId": "22222222-2222-2222-2222-222222222222",
+      "TenantCountry": "NO",
+      "Resource": "https://service.powerapps.com/",
+      "OrganizationId": null,
+      "EnvironmentId": null,
+      "EnvironmentType": "Regular",
+      "OrganizationUniqueName": null,
+      "FriendlyName": null,
+      "EnvironmentGeo": null
+    }
+  },
+  "Profiles": [
+    {
+      "Kind": "UNIVERSAL",
+      "User": "maker@contoso.com",
+      "ExpiresOn": "2026-06-10T12:00:00+00:00",
+      "Name": "",
+      "ProfileType": 4,
+      "CloudInstance": 0,
+      "TenantId": "22222222-2222-2222-2222-222222222222",
+      "Resource": "https://service.powerapps.com/",
+      "OrganizationId": null,
+      "FriendlyName": null
+    }
+  ]
+}
