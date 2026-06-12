@@ -81,10 +81,18 @@ function Format-PacLifeSegments {
             if ($Context.State -eq 'NoEnvironment') {
                 & $add 'no env — pac env select' 'EnvUnknown' 100
             } else {
-                # environment, colored by classification
+                # environment, colored by classification; the warning states the
+                # cause in plain words — no vocabulary to learn, no shouting
                 $envName = [string]$Context.EnvironmentName
                 switch ($Context.EnvironmentState) {
-                    'Protected' { & $add "$envName ⚠ ALL EYEZ ON YOU" 'EnvProtected' 100 "$envName ⚠" }
+                    'Protected' {
+                        $reason = switch ([string]$Context.EnvironmentType) {
+                            'Production' { 'Production' }
+                            'Default'    { 'Default Environment' }
+                            default      { 'Protected' }
+                        }
+                        & $add "$envName ⚠ $reason" 'EnvProtected' 100 "$envName ⚠"
+                    }
                     'Safe'      { & $add $envName 'EnvSafe' 100 }
                     default     { & $add $envName 'EnvUnknown' 100 }
                 }
@@ -92,7 +100,7 @@ function Format-PacLifeSegments {
                 if ($Context.Solution) { & $add "sln $($Context.Solution.Name)" 'Solution' 70 }
 
                 if ($Context.CloudName -and $Context.CloudName -ne 'Public') {
-                    & $add ($Context.CloudName.ToUpper()) 'Sovereign' 95
+                    & $add $Context.CloudName 'Sovereign' 95
                 }
                 if ($Context.AuthKind) { & $add $Context.AuthKind 'Dim1' 30 }
 

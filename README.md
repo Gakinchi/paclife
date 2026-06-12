@@ -7,7 +7,7 @@ Always know **who** you're logged in as, **which tenant**, **which environment**
 you're working on — before you run that `pac solution import` against the wrong org.
 
 ```
- ⚡ PacLife  dennis@contoso.com  Contoso Prod ⚠ ALL EYEZ ON YOU  UNIVERSAL  EMEA · Public  #4/4  pac 2.7.4
+ ⚡ PacLife  dennis@contoso.com  Contoso Prod ⚠ Production  UNIVERSAL  EMEA · Public  #4/4  pac 2.7.4
 ┌──────────────────────────────────────────────────────────────────────┐
 │  ↑ pinned to row 1 — your commands and output scroll freely below    │
 │                                                                      │
@@ -25,7 +25,8 @@ Named after 2Pac's *Pac's Life*. Yes, really.
 - The statusline **refreshes after every command**: run `pac auth select` or `pac env select`
   and the top row updates immediately.
 - **Production gets the red treatment**: environments of type `Production`/`Default` — or any URL
-  you mark as protected — shout `⚠ ALL EYEZ ON YOU` on a red segment.
+  you mark as protected — show a red segment stating why: `⚠ Production`, `⚠ Default Environment`
+  or `⚠ Protected`.
 - **Service principals are unmistakable**: SPN auth renders on a purple segment with the AppId,
   so a CI/consultant identity is never mistaken for you.
 - **Sovereign clouds stand out**: GCC / GCC High / DoD / China get a high-visibility magenta segment.
@@ -61,7 +62,7 @@ In a legacy console without VT support, PacLife simply stays quiet.
 | Identity | user UPN (blue) or service principal AppId (purple, `SPN`) |
 | Environment | friendly name, colored **red** (Production/Default/protected), **green** (Sandbox/Developer/Trial), **yellow** (unknown or *no environment selected*) |
 | Auth kind | `UNIVERSAL` / `DATAVERSE` / `ADMIN` — explains why some pac commands fail despite being "logged in" |
-| Cloud / geo | `EMEA · Public` (dim) or `GCC HIGH` (magenta) |
+| Cloud / geo | `EMEA · Public` (dim) or `GCC High` (magenta) |
 | Solution | detected from your working directory (`.cdsproj`, `src/Other/Solution.xml`, `.pcfproj` — searched upward, like git finds `.git`) |
 | Profiles | `#4/4` — active profile / total (`pac auth list`) |
 | pac version | the locally installed CLI version |

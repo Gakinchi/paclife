@@ -177,10 +177,33 @@ Describe 'Format-PacLifeSegments' {
         $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
     }
 
-    It 'shouts ALL EYEZ ON YOU for protected environments at full width' {
+    It 'states the cause in plain words for a Production environment' {
         $ctx = Get-PacContext
         InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
-            Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Match 'ALL EYEZ ON YOU'
+            Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Match '⚠ Production'
+        }
+    }
+
+    It 'says Default Environment for a protected default-type environment' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'default-env.json'
+        $ctx = Get-PacContext
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Match '⚠ Default Environment'
+        }
+    }
+
+    It 'says Protected when a protectedUrls rule (not the type) triggered the warning' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'sandbox.json'
+        $config = Join-Path $TestDrive 'reason-config.json'
+        '{ "protectedUrls": ["*contoso-dev*"] }' | Set-Content $config
+        $env:PACLIFE_CONFIG = $config
+        try {
+            $ctx = Get-PacContext
+            InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+                Format-PacLifeSegments -Context $Ctx -Width 200 | Should -Match '⚠ Protected'
+            }
+        } finally {
+            $env:PACLIFE_CONFIG = Join-Path ([IO.Path]::GetTempPath()) 'paclife-test-config-does-not-exist.json'
         }
     }
 
@@ -202,7 +225,7 @@ Describe 'Format-PacLifeSegments' {
             $line = Format-PacLifeSegments -Context $Ctx -Width 60
             $visible = $line -replace "`e\[[0-9;]*m", ''
             (Get-PacLifeVisibleWidth $visible) | Should -BeLessOrEqual 60
-            $line | Should -Not -Match 'ALL EYEZ ON YOU'   # swapped to the short ⚠ form
+            $line | Should -Not -Match '⚠ Production'   # swapped to the short ⚠ form
         }
     }
 

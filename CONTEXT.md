@@ -17,6 +17,9 @@ PacLife is a persistent Power Platform CLI statusline for the terminal, named af
   {Sandbox, Developer, Trial} → safe; anything else → unknown (yellow).
   `protectedUrls` wildcard patterns in `~/.paclife.json` override the type
   (covers real production mislabeled as Sandbox); `safeUrls` patterns mute it.
+  The displayed warning states the *cause* in plain words, natural casing —
+  `⚠ Production`, `⚠ Default Environment`, or `⚠ Protected` (URL rule) —
+  never slogans or vocabulary the user has to learn first.
 - **Statusline** — the pinned top row of the terminal, redrawn by the prompt hook.
 - **Banner** — the on-demand detailed box rendered by `Show-PacLife -Full` (`alleyez`).
 - **Identity** — who pac runs as: a *user* (UPN) or a *service principal*

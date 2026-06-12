@@ -1,0 +1,35 @@
+{
+  "Current": {
+    "UNIVERSAL": {
+      "Kind": "UNIVERSAL",
+      "User": "maker@contoso.com",
+      "ExpiresOn": "2026-06-10T12:00:00+00:00",
+      "Name": "",
+      "ProfileType": 0,
+      "CloudInstance": 0,
+      "TenantId": "22222222-2222-2222-2222-222222222222",
+      "TenantCountry": "NO",
+      "Resource": "https://contoso.crm4.dynamics.com/",
+      "OrganizationId": "88888888-8888-8888-8888-888888888888",
+      "EnvironmentType": "Default",
+      "FriendlyName": "Contoso (default)",
+      "EnvironmentGeo": "EMEA"
+    }
+  },
+  "Profiles": [
+    {
+      "Kind": "UNIVERSAL",
+      "User": "maker@contoso.com",
+      "ExpiresOn": "2026-06-10T12:00:00+00:00",
+      "Name": "",
+      "ProfileType": 0,
+      "CloudInstance": 0,
+      "TenantId": "22222222-2222-2222-2222-222222222222",
+      "Resource": "https://contoso.crm4.dynamics.com/",
+      "OrganizationId": "88888888-8888-8888-8888-888888888888",
+      "EnvironmentType": "Default",
+      "FriendlyName": "Contoso (default)",
+      "EnvironmentGeo": "EMEA"
+    }
+  ]
+}
