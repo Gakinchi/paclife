@@ -6,15 +6,7 @@ A persistent **Power Platform CLI (`pac`) statusline** pinned to the top of your
 Always know **who** you're logged in as, **which tenant**, **which environment**, and **which solution**
 you're working on — before you run that `pac solution import` against the wrong org.
 
-```
- ⚡  dennis@contoso.com  Contoso Prod ⚠ Production  EMEA  4 profiles  pac 2.7.4
-┌──────────────────────────────────────────────────────────────────────┐
-│  ↑ pinned to row 1 — your commands and output scroll freely below    │
-│                                                                      │
-│  PS> pac env select --environment contoso-dev                        │
-│  PS> _            ← the statusline switched environment automatically │
-└──────────────────────────────────────────────────────────────────────┘
-```
+![PacLife statusline pinned to the top of the terminal](paclife-banner.png)
 
 Named after 2Pac's *Pac's Life*. Yes, really.
 
