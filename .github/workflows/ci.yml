@@ -21,6 +21,17 @@ jobs:
           Install-Module Pester -MinimumVersion 5.5 -Force -SkipPublisherCheck
           Install-Module PSScriptAnalyzer -Force
 
+      - name: No BOM in irm|iex scripts
+        shell: pwsh
+        run: |
+          # install.ps1 / uninstall.ps1 are piped through `irm ... | iex`; a leading
+          # UTF-8 BOM becomes a stray token and breaks param()/[CmdletBinding()] parsing.
+          $bad = foreach ($f in 'install.ps1', 'uninstall.ps1') {
+            $b = [IO.File]::ReadAllBytes("$PWD/$f")
+            if ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF) { $f }
+          }
+          if ($bad) { throw "BOM found in: $($bad -join ', '). Save these as UTF-8 without BOM." }
+
       - name: PSScriptAnalyzer
         shell: pwsh
         run: |

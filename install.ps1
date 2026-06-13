@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     PacLife installer — All Eyez on your environment.
     Installs the latest GitHub Release of the PacLife PowerShell module into

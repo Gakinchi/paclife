@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     PacLife uninstaller: disables the statusline, removes the profile block,
     and deletes the module from the user module path(s).
