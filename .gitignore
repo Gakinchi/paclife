@@ -1,3 +1,6 @@
 testResults.xml
 *.zip
 .DS_Store
+
+# Promo / go-to-market material (content-pipeline output) — local only, never published
+content/

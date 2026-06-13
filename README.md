@@ -8,7 +8,22 @@ you're working on — before you run that `pac solution import` against the wron
 
 ![PacLife statusline pinned to the top of the terminal](paclife-banner.png)
 
-Named after 2Pac's *Pac's Life*. Yes, really.
+## How it started
+
+A colleague started living in the Power Platform CLI and kept hitting the same
+wall before every command: *which environment am I actually pointed at right
+now?* The honest way to find out is `pac org who` — six seconds, one network
+round-trip, and a small prayer that the answer isn't "Production." He wanted that
+answer **pinned to the top of his terminal**: always on, no round-trip, no
+praying.
+
+> "Can't you just... make that?"
+
+Reader, this is *"just make that."*
+
+The name wrote itself. `pac` + a statusline keeping **All Eyez on your
+environment** left no responsible alternative to naming it after 2Pac's *Pac's
+Life*. Yes, really. Roll the tape:
 
 [![2Pac — Pac's Life](https://img.youtube.com/vi/iIlUNd7suew/hqdefault.jpg)](https://www.youtube.com/watch?v=iIlUNd7suew)
 
