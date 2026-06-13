@@ -4,12 +4,12 @@
     Installs the latest GitHub Release of the PacLife PowerShell module into
     your user module path and enables the statusline.
 .EXAMPLE
-    irm https://raw.githubusercontent.com/Gakinchi/power-platform-cli-environment-banner/main/install.ps1 | iex
+    irm https://raw.githubusercontent.com/Gakinchi/paclife/main/install.ps1 | iex
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Interactive installer')]
 [CmdletBinding()]
 param(
-    [string]$Repo = 'Gakinchi/power-platform-cli-environment-banner',
+    [string]$Repo = 'Gakinchi/paclife',
     [switch]$NoProfile   # install only; do not enable / touch the profile
 )
 

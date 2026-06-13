@@ -34,10 +34,10 @@ Named after 2Pac's *Pac's Life*. Yes, really.
 ## Install
 
 ```powershell
-irm https://raw.githubusercontent.com/Gakinchi/power-platform-cli-environment-banner/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Gakinchi/paclife/main/install.ps1 | iex
 ```
 
-Installs the latest [GitHub Release](https://github.com/Gakinchi/power-platform-cli-environment-banner/releases)
+Installs the latest [GitHub Release](https://github.com/Gakinchi/paclife/releases)
 into your user module path and adds an activation block to your PowerShell profile.
 
 **Requirements:** a VT-capable terminal (Windows Terminal, VS Code terminal, iTerm2, ...).
@@ -122,7 +122,7 @@ Just make sure the PacLife block stays **last** in your `$PROFILE` (the installe
 ```powershell
 lifegoeson    # turn off + remove from profile
 # or remove everything:
-irm https://raw.githubusercontent.com/Gakinchi/power-platform-cli-environment-banner/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/Gakinchi/paclife/main/uninstall.ps1 | iex
 ```
 
 ## FAQ

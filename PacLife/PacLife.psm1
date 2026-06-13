@@ -10,7 +10,7 @@ $script:CliVersionCache = $null
 $script:ThemeCache = $null
 $script:SgrCache = @{}
 $script:SolutionCache = @{}
-$script:RepoSlug = 'Gakinchi/power-platform-cli-environment-banner'
+$script:RepoSlug = 'Gakinchi/paclife'
 
 foreach ($scope in 'Private', 'Public') {
     foreach ($file in Get-ChildItem -Path (Join-Path $PSScriptRoot $scope) -Filter '*.ps1' -ErrorAction SilentlyContinue) {

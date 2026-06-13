@@ -26,8 +26,8 @@
     PrivateData       = @{
         PSData = @{
             Tags         = @('PowerPlatform', 'pac', 'Dataverse', 'statusline', 'terminal', 'prompt')
-            LicenseUri   = 'https://github.com/Gakinchi/power-platform-cli-environment-banner/blob/main/LICENSE'
-            ProjectUri   = 'https://github.com/Gakinchi/power-platform-cli-environment-banner'
+            LicenseUri   = 'https://github.com/Gakinchi/paclife/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/Gakinchi/paclife'
             ReleaseNotes = 'Initial release.'
         }
     }
