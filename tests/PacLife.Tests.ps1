@@ -386,9 +386,12 @@ Describe 'Profile block' {
         $profilePath = Join-Path $TestDrive 'profile.ps1'
         Set-Content $profilePath '# my existing profile'
 
-        InModuleScope PacLife -Parameters @{ Path = $profilePath } {
-            Add-PacLifeProfileBlock -Path $Path -ModuleBase 'C:\fake\PacLife'
-            Add-PacLifeProfileBlock -Path $Path -ModuleBase 'C:\fake\PacLife'
+        # platform-neutral fake module path (a literal 'C:\...' makes Join-Path
+        # throw DriveNotFoundException on Linux CI)
+        $moduleBase = Join-Path $TestDrive 'fake-module'
+        InModuleScope PacLife -Parameters @{ Path = $profilePath; ModuleBase = $moduleBase } {
+            Add-PacLifeProfileBlock -Path $Path -ModuleBase $ModuleBase
+            Add-PacLifeProfileBlock -Path $Path -ModuleBase $ModuleBase
         }
         $content = Get-Content $profilePath -Raw
         ([regex]::Matches($content, '# >>> PacLife >>>')).Count | Should -Be 1
@@ -412,8 +415,9 @@ Describe 'Profile block' {
         $profilePath = Join-Path $TestDrive 'profile2.ps1'
         Set-Content $profilePath '# keep me'
 
-        InModuleScope PacLife -Parameters @{ Path = $profilePath } {
-            Add-PacLifeProfileBlock -Path $Path -ModuleBase 'C:\fake\PacLife'
+        $moduleBase = Join-Path $TestDrive 'fake-module'
+        InModuleScope PacLife -Parameters @{ Path = $profilePath; ModuleBase = $moduleBase } {
+            Add-PacLifeProfileBlock -Path $Path -ModuleBase $ModuleBase
             Remove-PacLifeProfileBlock -Path $Path
         }
         $content = Get-Content $profilePath -Raw
