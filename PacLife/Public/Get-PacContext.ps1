@@ -35,6 +35,7 @@
         EnvironmentType    = $null
         EnvironmentGeo     = $null
         EnvironmentState   = $null
+        ProtectedReason    = $null
         ProfileCount       = 0
         ActiveProfileIndex = $null
         Solution           = Get-PacSolutionContext
@@ -141,6 +142,16 @@
         if ($pattern -and $url -like $pattern) { $envState = 'Protected' }
     }
     $context.EnvironmentState = $envState
+
+    # Display reason in plain words, derived once here so the statusline and the
+    # full banner can never drift apart
+    if ($envState -eq 'Protected') {
+        $context.ProtectedReason = switch ([string]$context.EnvironmentType) {
+            'Production' { 'Production' }
+            'Default'    { 'Default Environment' }
+            default      { 'Protected' }
+        }
+    }
 
     return $context
 }

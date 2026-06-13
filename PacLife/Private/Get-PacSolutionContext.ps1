@@ -76,6 +76,14 @@ function Get-PacSolutionContext {
         $dir = $parent
     }
 
+    # prune expired entries so a session roaming many directories doesn't grow the
+    # cache unboundedly
+    if ($script:SolutionCache.Count -ge 64) {
+        $cutoff = (Get-Date).AddSeconds(-30)
+        foreach ($key in @($script:SolutionCache.Keys)) {
+            if ($script:SolutionCache[$key].At -lt $cutoff) { $script:SolutionCache.Remove($key) }
+        }
+    }
     $script:SolutionCache[$Path] = [pscustomobject]@{ At = Get-Date; Result = $result }
     return $result
 }

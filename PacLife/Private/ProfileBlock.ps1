@@ -1,4 +1,25 @@
-﻿$script:ProfileBlockPattern = '(?s)\r?\n?# >>> PacLife >>>.*?# <<< PacLife <<<[ \t]*\r?\n?'
+﻿# NB: must not consume the LEADING newline — otherwise removing a block that sits
+# between other content joins the surrounding lines into one (profile corruption).
+# Keep in sync with the literal copy in uninstall.ps1 (which must run standalone).
+$script:ProfileBlockPattern = '(?s)# >>> PacLife >>>.*?# <<< PacLife <<<[ \t]*(\r?\n)?'
+
+function Set-PacLifeProfileContent {
+    <#
+    .SYNOPSIS
+        Writes profile content via a temp file + Move-Item so a failed write
+        (disk full, AV interference) can never truncate the user's $PROFILE.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Private helper; public Enable/Disable are the entry points')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] [string]$Path,
+        [Parameter(Mandatory)] [AllowEmptyString()] [string]$Content
+    )
+
+    $temp = "$Path.paclife-tmp"
+    Set-Content -LiteralPath $temp -Value $Content -NoNewline -Encoding UTF8
+    Move-Item -LiteralPath $temp -Destination $Path -Force
+}
 
 function Add-PacLifeProfileBlock {
     <#
@@ -33,7 +54,7 @@ if (`$Host.Name -eq 'ConsoleHost') {
     $content = $content.TrimEnd()
     if ($content) { $content += [Environment]::NewLine + [Environment]::NewLine }
     $content += $block + [Environment]::NewLine
-    Set-Content -LiteralPath $Path -Value $content -NoNewline -Encoding UTF8
+    Set-PacLifeProfileContent -Path $Path -Content $content
 }
 
 function Remove-PacLifeProfileBlock {
@@ -51,9 +72,6 @@ function Remove-PacLifeProfileBlock {
     $content = Get-Content -LiteralPath $Path -Raw
     if ($null -eq $content -or $content -notmatch '# >>> PacLife >>>') { return }
     $content = ($content -replace $script:ProfileBlockPattern, '').TrimEnd()
-    if ($content) {
-        Set-Content -LiteralPath $Path -Value ($content + [Environment]::NewLine) -NoNewline -Encoding UTF8
-    } else {
-        Set-Content -LiteralPath $Path -Value '' -NoNewline -Encoding UTF8
-    }
+    if ($content) { $content += [Environment]::NewLine }
+    Set-PacLifeProfileContent -Path $Path -Content $content
 }

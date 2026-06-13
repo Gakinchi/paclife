@@ -221,6 +221,20 @@ Describe 'Format-PacLifeSegments' {
         }
     }
 
+    It 'trims wide (CJK) text by cells, neither overflowing nor over-trimming' {
+        # Width 30 forces the lone surviving env segment (42 cells) through the
+        # trimmer — char-based trimming would over-cut to ~13 cells.
+        $ctx = Get-PacContext
+        $ctx.EnvironmentName = '環境環境環境環境環境環境環境環境環境環境'   # 20 chars = 40 cells
+        InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
+            $line = Format-PacLifeSegments -Context $Ctx -Width 30
+            $visible = $line -replace "`e\[[0-9;]*m", ''
+            $width = Get-PacLifeVisibleWidth $visible
+            $width | Should -BeLessOrEqual 30
+            $width | Should -BeGreaterThan 24   # cell-correct trim: close to budget
+        }
+    }
+
     It 'states the profile count in plain words, without the cryptic index' {
         $ctx = Get-PacContext
         InModuleScope PacLife -Parameters @{ Ctx = $ctx } {
@@ -379,6 +393,19 @@ Describe 'Profile block' {
         $content = Get-Content $profilePath -Raw
         ([regex]::Matches($content, '# >>> PacLife >>>')).Count | Should -Be 1
         $content | Should -Match '# my existing profile'
+    }
+
+    It 'does not join surrounding lines when removing a block in the middle of the profile' {
+        $profilePath = Join-Path $TestDrive 'profile3.ps1'
+
+        InModuleScope PacLife -Parameters @{ Path = $profilePath } {
+            Set-Content $Path "function Foo { 1 }`r`n# >>> PacLife >>>`r`nImport-Module x`r`n# <<< PacLife <<<`r`nWrite-Host 'after'"
+            Remove-PacLifeProfileBlock -Path $Path
+        }
+        $lines = @(Get-Content $profilePath)
+        $lines | Should -Contain "function Foo { 1 }"
+        $lines | Should -Contain "Write-Host 'after'"
+        $lines | Should -Not -Contain "function Foo { 1 }Write-Host 'after'"
     }
 
     It 'removes the block and preserves the rest of the profile' {

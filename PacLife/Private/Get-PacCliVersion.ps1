@@ -10,10 +10,13 @@
         [string]$StoreDir
     )
 
-    if ($script:CliVersionCache -and $script:CliVersionCache.Dir -eq $StoreDir) {
+    if (-not $StoreDir -or -not (Test-Path -LiteralPath $StoreDir)) { return $null }
+    # key on the directory's mtime too: 'pac install latest' creates a new version
+    # folder, which bumps it — the statusline then shows the new version immediately
+    $mtime = (Get-Item -LiteralPath $StoreDir).LastWriteTimeUtc
+    if ($script:CliVersionCache -and $script:CliVersionCache.Dir -eq $StoreDir -and $script:CliVersionCache.MTime -eq $mtime) {
         return $script:CliVersionCache.Version
     }
-    if (-not $StoreDir -or -not (Test-Path -LiteralPath $StoreDir)) { return $null }
 
     $version = $null
     try {
@@ -29,6 +32,6 @@
         Write-Verbose "PacLife: version probe failed: $_"
     }
 
-    $script:CliVersionCache = [pscustomobject]@{ Dir = $StoreDir; Version = $version }
+    $script:CliVersionCache = [pscustomobject]@{ Dir = $StoreDir; MTime = $mtime; Version = $version }
     return $version
 }

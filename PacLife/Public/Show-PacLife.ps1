@@ -64,12 +64,7 @@
                 $tags = @($context.EnvironmentType, $context.EnvironmentGeo) | Where-Object { $_ }
                 if ($tags) { $envLine += "  [$($tags -join ' · ')]" }
                 if ($context.EnvironmentState -eq 'Protected') {
-                    $reason = switch ([string]$context.EnvironmentType) {
-                        'Production' { 'Production' }
-                        'Default'    { 'Default Environment' }
-                        default      { 'Protected' }
-                    }
-                    $envLine += "  ⚠ $reason — all eyez on you"
+                    $envLine += "  ⚠ $($context.ProtectedReason) — all eyez on you"
                 }
                 $rows.Add((& $pad 'Env' $envLine))
                 $rows.Add((& $pad 'URL' $context.EnvironmentUrl))

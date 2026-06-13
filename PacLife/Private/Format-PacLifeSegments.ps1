@@ -22,20 +22,55 @@
     return $width
 }
 
-function ConvertTo-PacLifeSgr {
+function Get-PacLifeCellPrefix {
     <#
     .SYNOPSIS
-        '#rrggbb' → truecolor SGR parameter string ('38;2;r;g;b' or '48;2;r;g;b').
+        Returns the longest prefix of a string that fits within a cell budget —
+        truncation must count cells, not chars, or wide (CJK/emoji) text is
+        over- or under-trimmed.
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)] [string]$Hex,
-        [switch]$Background
+        [string]$Text,
+        [int]$Cells
     )
+
+    if (-not $Text) { return '' }
+    $used = 0
+    $i = 0
+    while ($i -lt $Text.Length) {
+        $c = $Text[$i]
+        $isSurrogate = [char]::IsHighSurrogate($c)
+        $code = [int]$c
+        $w = if ($isSurrogate -or
+            ($code -ge 0x1100 -and $code -le 0x115F) -or
+            ($code -ge 0x2E80 -and $code -le 0xA4CF) -or
+            ($code -ge 0xAC00 -and $code -le 0xD7A3) -or
+            ($code -ge 0xF900 -and $code -le 0xFAFF) -or
+            ($code -ge 0xFF00 -and $code -le 0xFF60)) { 2 } else { 1 }
+        if ($used + $w -gt $Cells) { break }
+        $used += $w
+        $i += if ($isSurrogate) { 2 } else { 1 }
+    }
+    return $Text.Substring(0, $i)
+}
+
+# Plain function on purpose (no CmdletBinding): called ~15-20x per prompt render.
+# Memoized in $script:SgrCache — the single hex→SGR implementation.
+function ConvertTo-PacLifeSgr {
+    param(
+        [string]$Hex,
+        [bool]$Background = $false
+    )
+    $key = "$Hex|$Background"
+    $value = $script:SgrCache[$key]
+    if ($value) { return $value }
     $rgb = ConvertFrom-PacLifeHex $Hex
     if (-not $rgb) { $rgb = @(255, 255, 255) }
     $plane = if ($Background) { 48 } else { 38 }
-    return "$plane;2;$($rgb[0]);$($rgb[1]);$($rgb[2])"
+    $value = "$plane;2;$($rgb[0]);$($rgb[1]);$($rgb[2])"
+    $script:SgrCache[$key] = $value
+    return $value
 }
 
 function Format-PacLifeSegments {
@@ -57,11 +92,11 @@ function Format-PacLifeSegments {
     $theme = Get-PacLifeTheme
     $esc = [char]27
 
-    # --- build segment list: @{ Text; AltText; Role; Priority } -------------------
+    # --- build segment list: @{ Text; AltText; Role; Priority; CellWidth } --------
     $segments = [System.Collections.Generic.List[object]]::new()
     $add = {
         param($text, $role, $priority, $altText = $null)
-        $segments.Add([pscustomobject]@{ Text = $text; AltText = $altText; Role = $role; Priority = $priority })
+        $segments.Add([pscustomobject]@{ Text = $text; AltText = $altText; Role = $role; Priority = $priority; CellWidth = $null })
     }
 
     # visual anchor only — the name lives in alleyez/README, not in prime screen estate
@@ -83,17 +118,10 @@ function Format-PacLifeSegments {
                 & $add 'no env — pac env select' 'EnvUnknown' 100
             } else {
                 # environment, colored by classification; the warning states the
-                # cause in plain words — no vocabulary to learn, no shouting
+                # cause in plain words (ProtectedReason, derived in Get-PacContext)
                 $envName = [string]$Context.EnvironmentName
                 switch ($Context.EnvironmentState) {
-                    'Protected' {
-                        $reason = switch ([string]$Context.EnvironmentType) {
-                            'Production' { 'Production' }
-                            'Default'    { 'Default Environment' }
-                            default      { 'Protected' }
-                        }
-                        & $add "$envName ⚠ $reason" 'EnvProtected' 100 "$envName ⚠"
-                    }
+                    'Protected' { & $add "$envName ⚠ $($Context.ProtectedReason)" 'EnvProtected' 100 "$envName ⚠" }
                     'Safe'      { & $add $envName 'EnvSafe' 100 }
                     default     { & $add $envName 'EnvUnknown' 100 }
                 }
@@ -134,23 +162,34 @@ function Format-PacLifeSegments {
     $measure = {
         param($segs)
         $total = 0
-        foreach ($s in $segs) { $total += (Get-PacLifeVisibleWidth $s.Text) + $perSegmentOverhead }
+        foreach ($s in $segs) {
+            if ($null -eq $s.CellWidth) { $s.CellWidth = Get-PacLifeVisibleWidth $s.Text }
+            $total += $s.CellWidth + $perSegmentOverhead
+        }
         $total
     }
     if ($Width -gt 0) {
         if ((& $measure $segments) -gt $Width) {
-            foreach ($s in $segments) { if ($s.AltText) { $s.Text = $s.AltText } }
+            foreach ($s in $segments) {
+                if ($s.AltText) { $s.Text = $s.AltText; $s.CellWidth = $null }
+            }
         }
-        while ((& $measure $segments) -gt $Width -and $segments.Count -gt 1) {
-            $lowest = $segments | Sort-Object Priority | Select-Object -First 1
-            if ($lowest.Priority -ge 100) { break }
-            $null = $segments.Remove($lowest)
+        # sort once, drop lowest-priority first until the line fits
+        foreach ($candidate in @($segments | Sort-Object Priority)) {
+            if ((& $measure $segments) -le $Width) { break }
+            if ($candidate.Priority -ge 100 -or $segments.Count -le 1) { break }
+            $null = $segments.Remove($candidate)
         }
         $excess = (& $measure $segments) - $Width
         if ($excess -gt 0) {
-            $longest = $segments | Sort-Object { (Get-PacLifeVisibleWidth $_.Text) } -Descending | Select-Object -First 1
-            $keep = [Math]::Max(3, $longest.Text.Length - $excess - 1)
-            if ($keep -lt $longest.Text.Length) { $longest.Text = $longest.Text.Substring(0, $keep) + '…' }
+            $longest = $segments | Sort-Object CellWidth -Descending | Select-Object -First 1
+            # trim by CELLS, not chars — wide (CJK/emoji) text is otherwise mis-trimmed
+            $targetCells = [Math]::Max(3, $longest.CellWidth - $excess - 1)
+            $prefix = Get-PacLifeCellPrefix -Text $longest.Text -Cells $targetCells
+            if ($prefix.Length -lt $longest.Text.Length) {
+                $longest.Text = $prefix + '…'
+                $longest.CellWidth = $null
+            }
         }
     }
 
@@ -159,24 +198,14 @@ function Format-PacLifeSegments {
         return ' ' + (($segments | ForEach-Object { $_.Text }) -join ' | ')
     }
 
+    # roles carry precomputed SGR codes (FgSgr/BgSgr/BgAsFgSgr) from Get-PacLifeTheme —
+    # no per-color conversion calls in this per-prompt loop
     $role = {
         param($name)
         $r = $theme.Roles[$name]
-        if ($r) { $r } else { @{ Fg = '#ffffff'; Bg = '#444444' } }
-    }
-    # Memoized hex→SGR (per-prompt budget: avoid per-color function-call overhead)
-    $sgr = {
-        param($hex, $background)
-        $key = "$hex|$background"
-        $value = $script:SgrCache[$key]
-        if (-not $value) {
-            $rgb = ConvertFrom-PacLifeHex $hex
-            if (-not $rgb) { $rgb = @(255, 255, 255) }
-            $plane = if ($background) { 48 } else { 38 }
-            $value = "$plane;2;$($rgb[0]);$($rgb[1]);$($rgb[2])"
-            $script:SgrCache[$key] = $value
+        if ($r) { $r } else {
+            @{ FgSgr = (ConvertTo-PacLifeSgr '#ffffff' $false); BgSgr = (ConvertTo-PacLifeSgr '#444444' $true); BgAsFgSgr = (ConvertTo-PacLifeSgr '#444444' $false) }
         }
-        $value
     }
     $sb = [System.Text.StringBuilder]::new()
 
@@ -185,10 +214,7 @@ function Format-PacLifeSegments {
             for ($i = 0; $i -lt $segments.Count; $i++) {
                 $s = $segments[$i]
                 $c = & $role $s.Role
-                $capFg = & $sgr $c.Bg $false                     # caps drawn in the segment's bg color
-                $fg = & $sgr $c.Fg $false
-                $bg = & $sgr $c.Bg $true
-                [void]$sb.Append("$esc[0m$esc[${capFg}m$($theme.LeadCap)$esc[${bg}m$esc[${fg}m $($s.Text) $esc[0m$esc[${capFg}m$($theme.TrailCap)$esc[0m")
+                [void]$sb.Append("$esc[0m$esc[$($c.BgAsFgSgr)m$($theme.LeadCap)$esc[$($c.BgSgr)m$esc[$($c.FgSgr)m $($s.Text) $esc[0m$esc[$($c.BgAsFgSgr)m$($theme.TrailCap)$esc[0m")
                 if ($i -lt $segments.Count - 1) { [void]$sb.Append(' ') }
             }
         }
@@ -196,7 +222,7 @@ function Format-PacLifeSegments {
             for ($i = 0; $i -lt $segments.Count; $i++) {
                 $s = $segments[$i]
                 $c = & $role $s.Role
-                [void]$sb.Append("$esc[$(& $sgr $c.Bg $true)m$esc[$(& $sgr $c.Fg $false)m $($s.Text) $esc[0m")
+                [void]$sb.Append("$esc[$($c.BgSgr)m$esc[$($c.FgSgr)m $($s.Text) $esc[0m")
                 if ($i -lt $segments.Count - 1) { [void]$sb.Append(' ') }
             }
         }
@@ -204,12 +230,12 @@ function Format-PacLifeSegments {
             for ($i = 0; $i -lt $segments.Count; $i++) {
                 $s = $segments[$i]
                 $c = & $role $s.Role
-                [void]$sb.Append("$esc[$(& $sgr $c.Bg $true)m$esc[$(& $sgr $c.Fg $false)m $($s.Text) ")
+                [void]$sb.Append("$esc[$($c.BgSgr)m$esc[$($c.FgSgr)m $($s.Text) ")
                 if ($i -lt $segments.Count - 1) {
                     $next = & $role $segments[$i + 1].Role
-                    [void]$sb.Append("$esc[$(& $sgr $c.Bg $false)m$esc[$(& $sgr $next.Bg $true)m$($theme.Separator)")
+                    [void]$sb.Append("$esc[$($c.BgAsFgSgr)m$esc[$($next.BgSgr)m$($theme.Separator)")
                 } else {
-                    [void]$sb.Append("$esc[0m$esc[$(& $sgr $c.Bg $false)m$($theme.Separator)$esc[0m")
+                    [void]$sb.Append("$esc[0m$esc[$($c.BgAsFgSgr)m$($theme.Separator)$esc[0m")
                 }
             }
         }

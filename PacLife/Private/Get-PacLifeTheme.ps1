@@ -121,6 +121,18 @@ function Get-PacLifeTheme {
         $style = $config.style
         if ((-not $style -or $style -eq 'auto') -and $config.icons -eq 'ascii') { $style = 'plain' }  # legacy key
         if ($style -and $style -ne 'auto') { $theme.JoinStyle = $style }
+        # Precompute SGR codes once per theme build — the render loop runs every
+        # prompt and must not pay per-color conversion calls
+        foreach ($roleName in @($theme.Roles.Keys)) {
+            $role = $theme.Roles[$roleName]
+            $theme.Roles[$roleName] = @{
+                Fg        = $role.Fg
+                Bg        = $role.Bg
+                FgSgr     = ConvertTo-PacLifeSgr $role.Fg $false
+                BgSgr     = ConvertTo-PacLifeSgr $role.Bg $true
+                BgAsFgSgr = ConvertTo-PacLifeSgr $role.Bg $false   # powerline separators / diamond caps
+            }
+        }
         $script:ThemeCache = @{ File = $file; MTime = $mtime; Config = $config; Applied = $theme }
         $theme
     }

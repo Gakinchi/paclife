@@ -18,7 +18,9 @@ try {
     if ($PROFILE -and (Test-Path -LiteralPath $PROFILE)) {
         $content = Get-Content -LiteralPath $PROFILE -Raw
         if ($content -match '# >>> PacLife >>>') {
-            $content = ($content -replace '(?s)\r?\n?# >>> PacLife >>>.*?# <<< PacLife <<<[ \t]*\r?\n?', '').TrimEnd()
+            # keep this pattern in sync with PacLife\Private\ProfileBlock.ps1
+            # (leading newline must NOT be consumed — would join surrounding lines)
+            $content = ($content -replace '(?s)# >>> PacLife >>>.*?# <<< PacLife <<<[ \t]*(\r?\n)?', '').TrimEnd()
             Set-Content -LiteralPath $PROFILE -Value $content -Encoding UTF8
             Write-Host "Removed PacLife block from $PROFILE"
         }

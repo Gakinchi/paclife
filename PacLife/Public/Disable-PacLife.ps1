@@ -14,11 +14,18 @@
 
     if ($script:StatusLineActive) {
         $script:StatusLineActive = $false
-        if ($script:OriginalPrompt) {
-            $function:global:prompt = $script:OriginalPrompt
-        } else {
-            $function:global:prompt = {
-                "PS $($ExecutionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1)) "
+        # Only restore the saved prompt if the current one is still OUR wrapper —
+        # another tool (oh-my-posh re-init, starship) may have replaced it after
+        # Enable, and clobbering that with a stale snapshot would break their setup.
+        $currentPrompt = $function:global:prompt
+        $isOurWrapper = $currentPrompt -and $currentPrompt.ToString().Contains('Update-PacLifeStatusLine')
+        if ($isOurWrapper) {
+            if ($script:OriginalPrompt) {
+                $function:global:prompt = $script:OriginalPrompt
+            } else {
+                $function:global:prompt = {
+                    "PS $($ExecutionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1)) "
+                }
             }
         }
         $script:OriginalPrompt = $null
