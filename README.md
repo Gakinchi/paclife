@@ -18,6 +18,8 @@ you're working on — before you run that `pac solution import` against the wron
 
 Named after 2Pac's *Pac's Life*. Yes, really.
 
+[![2Pac — Pac's Life](https://img.youtube.com/vi/iIlUNd7suew/hqdefault.jpg)](https://www.youtube.com/watch?v=iIlUNd7suew)
+
 ## Why
 
 - `pac org who` takes **6+ seconds** (network round-trip). PacLife reads pac's **local auth store**
