@@ -26,7 +26,7 @@ Set-Alias -Name lifegoeson   -Value Disable-PacLife    # "Life Goes On"
 Set-Alias -Name changes      -Value Update-PacLife     # "Changes"
 
 # Show-PacLifeFull must be exported for the 'alleyez' alias to resolve from the caller's scope
-Export-ModuleMember -Function Show-PacLife, Show-PacLifeFull, Get-PacContext, Enable-PacLife, Disable-PacLife, Update-PacLife `
+Export-ModuleMember -Function Show-PacLife, Show-PacLifeFull, Get-PacContext, Get-PacLifeStatusLine, Enable-PacLife, Disable-PacLife, Update-PacLife `
     -Alias paclife, alleyez, keepyaheadup, lifegoeson, changes
 
 # Restore the terminal if the module is removed while the statusline is active

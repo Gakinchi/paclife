@@ -63,6 +63,7 @@ In a legacy console without VT support, PacLife simply stays quiet.
 | `lifegoeson` | `Disable-PacLife` | turn it off and restore the terminal |
 | `changes` | `Update-PacLife` | update to the latest release |
 | | `Get-PacContext` | the context as an object, for your own scripts |
+| | `Get-PacLifeStatusLine` | the context as one line, for an AI agent's statusline ([see below](#inside-an-ai-coding-agent-claude-code-copilot-cli-cursor)) |
 
 ## What the statusline shows
 
@@ -125,6 +126,78 @@ Set `"theme": "builtin"` to opt out.
 
 No problem — PacLife *wraps* your prompt function and calls it through, so both render.
 Just make sure the PacLife block stays **last** in your `$PROFILE` (the installer puts it there).
+
+## Inside an AI coding agent (Claude Code, Copilot CLI, Cursor)
+
+The pinned top row works by owning a terminal *scroll region* and repainting itself on
+every PowerShell prompt. A full-screen TUI agent — **Claude Code CLI**, **GitHub Copilot
+CLI**, **Cursor CLI** — takes over the whole screen, resets the scroll region, and stops
+the prompt loop, so the pinned banner disappears for the length of the session. Two
+programs can't own the same surface; this is structural, not a bug (it's the same reason
+vim/less disturb the top row — except here the prompt doesn't come back until you quit
+the agent).
+
+The fix is to stop fighting for row 1 and **ride the agent's own statusline** instead.
+All three agents support a custom statusline: they run a command and render its stdout at
+the bottom of their UI. `Get-PacLifeStatusLine` is exactly that command's payload — the
+same compact, theme-aware line, on one row. It reads pac's auth store directly, so it
+needs nothing from the agent.
+
+A ready-made launcher lives at [`agents/paclife-statusline.ps1`](agents/paclife-statusline.ps1)
+(it discards the session JSON the agent pipes in and prints the line).
+
+### Claude Code
+
+Claude Code renders multiple lines, so the cleanest setup is to **compose** PacLife as a
+second line under whatever your statusline already shows. If you already have a
+`statusLine` script, append:
+
+```powershell
+Import-Module PacLife -ErrorAction SilentlyContinue
+if (Get-Command Get-PacLifeStatusLine -ErrorAction SilentlyContinue) {
+    "`n" + (Get-PacLifeStatusLine)
+}
+```
+
+If you have no statusline yet, point `~/.claude/settings.json` straight at the launcher:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -NoProfile -File C:/Users/you/.claude/paclife-statusline.ps1"
+  }
+}
+```
+
+(or run `/statusline` in Claude Code and describe what you want).
+
+### GitHub Copilot CLI
+
+Custom statuslines are behind the `experimental` flag. Add to `~/.copilot/settings.json`:
+
+```json
+{
+  "experimental": true,
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -NoProfile -File C:/Users/you/.copilot/paclife-statusline.ps1"
+  }
+}
+```
+
+Then, inside Copilot CLI, run `/statusline`, toggle **custom** on, and `/restart`.
+
+### Cursor CLI
+
+Cursor's custom-command statusline is experimental and its config schema isn't officially
+documented yet, so the reliable path is the in-CLI helper: run **`/statusline`** in Cursor
+and point it at the launcher, e.g.
+`powershell -NoProfile -File C:/Users/you/.cursor/paclife-statusline.ps1`.
+
+> **Heads-up:** Each agent spawns a fresh PowerShell per refresh, so the line adds a small
+> `Import-Module` cost. PacLife's reads are mtime-cached and never hit the network, so it
+> stays well within a statusline budget.
 
 ## Uninstall
 
