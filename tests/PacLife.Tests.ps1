@@ -308,6 +308,56 @@ Describe 'Format-PacLifeSegments' {
     }
 }
 
+Describe 'Get-PacLifeStatusLine' {
+
+    It 'emits a single colored line for a connected context' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
+        $line = Get-PacLifeStatusLine -Width 200
+        $line | Should -BeOfType [string]
+        $line | Should -Match '⚡'
+        $line | Should -Match 'Contoso Prod'
+        $line | Should -Not -Match "`n"   # one line only — it rides the agent's statusline
+    }
+
+    It 'fits the requested width by dropping low-priority segments' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
+        $line = Get-PacLifeStatusLine -Width 60
+        $visible = $line -replace "`e\[[0-9;]*m", ''
+        InModuleScope PacLife -Parameters @{ Visible = $visible } {
+            (Get-PacLifeVisibleWidth $Visible) | Should -BeLessOrEqual 60
+        }
+    }
+
+    It 'falls back to $env:COLUMNS when no width is given' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
+        $env:COLUMNS = '60'
+        try {
+            $line = Get-PacLifeStatusLine
+            $visible = $line -replace "`e\[[0-9;]*m", ''
+            InModuleScope PacLife -Parameters @{ Visible = $visible } {
+                (Get-PacLifeVisibleWidth $Visible) | Should -BeLessOrEqual 60
+            }
+        } finally {
+            Remove-Item Env:COLUMNS -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'emits no escape sequences when NO_COLOR is set' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture 'connected.json'
+        $env:NO_COLOR = '1'
+        try {
+            Get-PacLifeStatusLine -Width 200 | Should -Not -Match "`e"
+        } finally {
+            Remove-Item Env:NO_COLOR -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'never throws when pac is not installed' {
+        $env:PACLIFE_STORE = New-StoreDir -Fixture $null
+        Get-PacLifeStatusLine -Width 200 | Should -Match 'pac CLI not found'
+    }
+}
+
 Describe 'Theme matching (oh-my-posh)' {
 
     BeforeEach {

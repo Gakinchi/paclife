@@ -10,6 +10,7 @@
         'Show-PacLife'
         'Show-PacLifeFull'
         'Get-PacContext'
+        'Get-PacLifeStatusLine'
         'Enable-PacLife'
         'Disable-PacLife'
         'Update-PacLife'
