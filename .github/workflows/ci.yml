@@ -36,8 +36,11 @@ jobs:
         shell: pwsh
         run: |
           $results = @(Invoke-ScriptAnalyzer -Path ./PacLife -Recurse -Severity Warning, Error)
-          $results += @(Invoke-ScriptAnalyzer -Path ./install.ps1 -Severity Warning, Error)
-          $results += @(Invoke-ScriptAnalyzer -Path ./uninstall.ps1 -Severity Warning, Error)
+          # install.ps1 / uninstall.ps1 are piped through `irm ... | iex` and must stay
+          # BOM-less (enforced by the "No BOM" step above), so PSUseBOMForUnicodeEncodedFile
+          # is inapplicable to them — it directly contradicts that hard requirement.
+          $results += @(Invoke-ScriptAnalyzer -Path ./install.ps1 -Severity Warning, Error -ExcludeRule PSUseBOMForUnicodeEncodedFile)
+          $results += @(Invoke-ScriptAnalyzer -Path ./uninstall.ps1 -Severity Warning, Error -ExcludeRule PSUseBOMForUnicodeEncodedFile)
           $results | Format-Table RuleName, ScriptName, Line, Message -AutoSize
           if ($results) { throw "PSScriptAnalyzer found $($results.Count) issue(s)." }
 
